@@ -371,25 +371,30 @@ class CollaborationServer {
         }, 30000); // 30 seconds
     }
 
-    start(port = 3001) {
-        this.server.listen(port, () => {
-            console.log(`\n🚀 N8N Collaboration Backend Server started`);
-            console.log(`📡 Server running on port ${port}`);
-            console.log(`🔗 WebSocket endpoint: ws://localhost:${port}`);
-            console.log(`🌐 API base URL: http://localhost:${port}/api`);
-            console.log(`💚 Health check: http://localhost:${port}/health`);
-            console.log(`\nReady for Chrome extension connections!\n`);
-        });
+		start() {
+		  const PORT = Number(process.env.PORT) || 3001;
+		  const HOST = process.env.HOST || '0.0.0.0';
 
-        // Graceful shutdown
-        process.on('SIGINT', () => {
-            console.log('\nShutting down server...');
-            this.server.close(() => {
-                console.log('Server stopped.');
-                process.exit(0);
-            });
-        });
-    }
+		  this.server.listen(PORT, HOST, () => {
+			const base = process.env.PUBLIC_URL || `http://localhost:${PORT}`;
+			console.log(`\n🚀 N8N Collaboration Backend Server started`);
+			console.log(`📡 Server listening on ${HOST}:${PORT}`);
+			console.log(`🔗 WebSocket endpoint: ws://localhost:${PORT}`);
+			console.log(`🌐 API base URL: ${base}/api`);
+			console.log(`💚 Health check: ${base}/health`);
+			console.log(`\nReady for Chrome extension connections!\n`);
+		  });
+
+		  // Graceful shutdown
+		  process.on('SIGINT', () => {
+			console.log('\nShutting down server...');
+			this.server.close(() => {
+			  console.log('Server stopped.');
+			  process.exit(0);
+			});
+		  });
+		}
+
 }
 
 // Start the server
