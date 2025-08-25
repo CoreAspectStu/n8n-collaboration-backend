@@ -13,14 +13,24 @@ RUN npm ci --omit=dev --no-audit --no-fund
 # ---- runner ----
 FROM node:20-slim AS runner
 WORKDIR /app
+
+# App config
 ENV NODE_ENV=production PORT=3001 HOST=0.0.0.0
+
+# Install curl for healthcheck
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 EXPOSE 3001
-HEALTHCHECK --interval=30s --timeout=3s --start-period=15s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:' + (process.env.PORT || 3001) + '/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+
+# Use curl-based healthcheck (Coolify likes this)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD curl -sf "http://127.0.0.1:${PORT}/health" >/dev/null || exit 1
 
 CMD ["node", "server.js"]
+
 
 
