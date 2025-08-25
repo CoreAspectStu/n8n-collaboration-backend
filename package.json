@@ -2,6 +2,7 @@
   "name": "n8n-collaboration-backend",
   "version": "1.0.0",
   "description": "Real-time collaboration backend service for n8n workflows",
+  "type": "commonjs",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -17,13 +18,14 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "build": "echo 'No build step required for Node.js application'",
+    "build": "node -e \"console.log('No build step required for Node.js application')\"",
     "docker:build": "docker build -t n8n-collaboration-backend .",
     "docker:run": "docker run -p 3000:3000 -p 3001:3001 n8n-collaboration-backend",
     "docker:dev": "docker-compose up --build",
     "docker:prod": "docker-compose -f docker-compose.production.yml up --build -d",
     "health-check": "node -e \"require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })\"",
-    "prepare": "node -e \"const fs=require('fs'); const hasGit=fs.existsSync('.git'); const hasHusky=fs.existsSync('node_modules/husky/package.json'); if(hasGit && hasHusky){ require('child_process').execSync('npx husky install',{stdio:'inherit'}); } else { console.log('skip husky (no .git or no dev deps)'); }\""
+    "prepare": "node -e \"process.exit(0)\"",
+    "setup:husky": "husky install"
   },
   "keywords": [
     "n8n",
@@ -39,14 +41,14 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/n8n-collaboration-backend.git"
+    "url": "https://github.com/CoreAspectStu/n8n-collaboration-backend.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/n8n-collaboration-backend/issues"
+    "url": "https://github.com/CoreAspectStu/n8n-collaboration-backend/issues"
   },
-  "homepage": "https://github.com/yourusername/n8n-collaboration-backend#readme",
+  "homepage": "https://github.com/CoreAspectStu/n8n-collaboration-backend#readme",
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=20.0.0",
     "npm": ">=8.0.0"
   },
   "dependencies": {
