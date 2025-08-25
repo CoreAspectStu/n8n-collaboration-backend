@@ -13,16 +13,14 @@ RUN npm ci --omit=dev --no-audit --no-fund
 # ---- runner ----
 FROM node:20-slim AS runner
 WORKDIR /app
-ENV NODE_ENV=production PORT=3000 WS_PORT=3001 HOST=0.0.0.0 WS_HOST=0.0.0.0
+ENV NODE_ENV=production PORT=3001 HOST=0.0.0.0
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# set ownership so the 'node' user can read everything
-RUN chown -R node:node /app
-USER node
 
-EXPOSE 3000 3001
+EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=15s --retries=3 \
-  CMD node -e "fetch('http://127.0.0.1:' + (process.env.PORT||3000) + '/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+  CMD node -e "fetch('http://127.0.0.1:' + (process.env.PORT || 3001) + '/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 
 CMD ["node", "server.js"]
+
 
