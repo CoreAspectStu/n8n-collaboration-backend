@@ -7,6 +7,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       python3 make g++ \
     && rm -rf /var/lib/apt/lists/*
 COPY package*.json ./
+
+RUN node -v && which node && npm -v && which npm
+RUN ls -la /app && cat /app/package.json | head -40
 RUN npm install --omit=dev --no-audit --no-fund
 
 # ---- runtime ----
