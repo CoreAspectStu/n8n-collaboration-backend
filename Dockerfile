@@ -1,36 +1,23 @@
-
-# Use official Node.js runtime as base image
-FROM node:18-alpine
-
-# Set working directory
+# ---- deps (install with lockfile, build native deps if needed) ----
+FROM node:18-alpine AS deps
 WORKDIR /app
-
-# Copy package files
+# toolchain for node-gyp & friends (only in build stage)
+RUN apk add --no-cache python3 make g++ libc6-compat
 COPY package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
-
-# Copy application code
-COPY . .
-
-# Create logs directory
-RUN mkdir -p logs
-
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
-
-# Change ownership of app directory
-RUN chown -R nodejs:nodejs /app
-USER nodejs
-
-# Expose ports
+# ---- runtime (slim) ----
+FROM node:18-alpine
+WORKDIR /app
+# add runtime compat (helps some binaries)
+RUN apk add --no-cache libc6-compat
+# copy installed modules only
+COPY --from=deps /app/node_modules ./node_modules
+# app source
+COPY src ./src
+ENV NODE_ENV=production
+# healthcheck for Coolify
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/health', r=>process.exit(r.statusCode===200?0:1))"
 EXPOSE 3000 3001
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
-
-# Start the application
-CMD ["node", "server.js"]
+CMD ["node","src/server.js"]
